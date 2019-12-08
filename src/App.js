@@ -1,10 +1,10 @@
 import React from 'react';
 import './App.css';
 
-import { Router, Link, Redirect, redirectTo, navigate } from "@reach/router"
+import { Router, navigate } from "@reach/router"
 
 
-import LogInPage from './components/logIn';
+import LogSignPage from './components/logSign';
 import ListPage from './components/list';
 import DetailPage from './components/detail';
 import ErrorPage from './components/error';
@@ -17,12 +17,13 @@ export default class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      currentToken: window.localStorage['BURToken'],
+      onGoingError: 0,
+      currentToken: window.localStorage.getItem('BURToken') || false,
       currentUser: "NaN"
     }
   }
 
-  // Post, /login
+  // *Post, /login
   handleLogin(logInfo) {
     // const history = useHistory();
     const fetchAddr = URLconfig.USER_ADDRESS + "/login";
@@ -40,13 +41,13 @@ export default class App extends React.Component {
           return result.json();
         }
 
-        return this.errorHandler({ message: "login unsuccessful, server stauts " + result.status });
+        throw { title: "login unsuccessful", message: result.message, status: result.status };
 
       })
       .then((res) => {
-        window.localStorage['BURToken'] = res;
+        window.localStorage.setItem('BURToken', res.token);
         this.setState({
-          currentToken: res,
+          currentToken: res.token,
           currentUser: logInfo.username
         });
 
@@ -58,26 +59,89 @@ export default class App extends React.Component {
         this.errorHandler(error)
       });
   }
+  // *Post, /login/signup
+  handleSignUp(logInfo) {
+    // const history = useHistory();
+    const fetchAddr = URLconfig.USER_ADDRESS + "/signup";
+
+    fetch(fetchAddr, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(logInfo)
+    })
+      .then((result) => {
+
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        // this.errorHandler({ message: "create user unsuccessful", status: result.status });
+        // return false;
+        throw { title: "signup unsuccessful", message: result.message, status: result.status };
+
+      })
+      .then((res) => {
+        this.handleLogin(logInfo);
+      })
+      // .then()
+      .catch((error) => {
+        this.errorHandler(error)
+      });
+  }
+  handleSignOut() {
+    window.localStorage.removeItem('BURToken');
+    this.setState({
+      currentToken: 0,
+      currentUser: "NaN"
+    });
+  }
   // handle all error in the app.
   errorHandler(error) {
     this.setState({
-      errorMessage: error.message
+      onGoingError: error
     })
-    console.log(error);
+    // console.log(error);
+    navigate('/error');
+  }
+  clearError() {
+    this.setState({
+      onGoingError: 0
+    });
+
+    // window.history.back();
+    navigate('/');
   }
 
   render() {
     return (
-      <Router>
+      <div className="body-wrapper">
 
-        <ListPage default path="/list" token={window.localStorage['BURToken']} />
+        <PageHeader token={this.state.currentToken} username={this.state.currentUser} onSignOut={() => this.handleSignOut()} />
 
-        <LogInPage path="/login" onLogin={(logInfo) => { this.handleLogin(logInfo) }} />
+        <Router>
 
-        <DetailPage path="/detail" />
+          <ListPage default path="/list" token={window.localStorage['BURToken']} />
+
+          <LogSignPage path="/login" onLogin={(logInfo) => { this.handleLogin(logInfo) }} onSignUp={(logInfo) => { this.handleSignUp(logInfo) }} />
+
+          <DetailPage path="/detail" />
+
+          <ErrorPage path="error" error={this.state.onGoingError} onClose={() => this.clearError()} />
 
 
-      </Router>
+        </Router>
+      </div>
     )
   }
+}
+
+
+function PageHeader(props) {
+  return (
+    <div>
+      {props.token ? (<div><span>{props.username}, Welcome!  </span><button onClick={props.onSignOut}>Logout</button></div>) : ""}
+    </div>
+  )
 }
