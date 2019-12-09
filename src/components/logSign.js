@@ -1,16 +1,12 @@
 import React from 'react';
-
+import { navigate } from "@reach/router"
 // CSS gose here
 
 export default class LogSignPage extends React.Component {
-  constructor(props) {
-    super(props);
-    // isLogIn: true for login, false for signup.
-    this.state = {
-      isLogIn: true,
-      uname: "",
-      upass: ""
-    }
+  state = {
+    isLogIn: true,
+    uname: "",
+    upass: "",
   }
   handleUname(event) {
     this.setState({
@@ -43,6 +39,13 @@ export default class LogSignPage extends React.Component {
     })
   }
   render() {
+
+    if (this.props.token) {
+      navigate('/');
+      // window.history.back();
+      // return;
+    }
+
     return (
       <div className="logsign-wrapper" >
         <h2>{this.state.isLogIn ? "Login" : "Signup"}</h2>

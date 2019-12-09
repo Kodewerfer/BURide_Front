@@ -1,27 +1,51 @@
 import React from 'react';
-import './App.css';
 
 import { Router, navigate } from "@reach/router"
-
 
 import LogSignPage from './components/logSign';
 import ListPage from './components/list';
 import DetailPage from './components/detail';
 import ErrorPage from './components/error';
+import NewOffer from './components/newOffer';
 
 import URLconfig from './config/URLconfig';
 
 
 
 export default class App extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {
-      onGoingError: 0,
-      currentToken: window.localStorage.getItem('BURToken') || false,
-      currentUser: "NaN"
+  state = {
+    onGoingError: 0,
+    currentToken: window.localStorage.getItem('BURToken') || false,
+    currentUser: window.localStorage.getItem('BURUser') || false,
+    listData: false
+  }
+  // fetch data of the list only when mounting
+  componentDidMount() {
+    if (this.state.currentToken && this.state.currentUser) {
+      this.fetchOffers();
+      this.fetchUserOrders();
     }
   }
+  //  handle localStorage, all in one place.
+  componentDidUpdate() {
+
+    const token = this.state.currentToken;
+    const user = this.state.currentUser
+
+    // afte login
+    if (token && user) {
+      window.localStorage.setItem('BURToken', token);
+      window.localStorage.setItem('BURUser', user);
+    }
+
+    // a logout has been proformed
+    if (token === false && user === false) {
+      window.localStorage.removeItem('BURToken');
+      window.localStorage.removeItem('BURUser');
+    }
+  }
+
+
 
   // *Post, /login
   handleLogin(logInfo) {
@@ -45,13 +69,14 @@ export default class App extends React.Component {
 
       })
       .then((res) => {
-        window.localStorage.setItem('BURToken', res.token);
         this.setState({
           currentToken: res.token,
           currentUser: logInfo.username
         });
 
-        navigate('/list');
+        navigate('/');
+
+        window.location.reload();
 
       })
       // .then()
@@ -77,8 +102,6 @@ export default class App extends React.Component {
           return result.json();
         }
 
-        // this.errorHandler({ message: "create user unsuccessful", status: result.status });
-        // return false;
         throw { title: "signup unsuccessful", message: result.message, status: result.status };
 
       })
@@ -91,12 +114,88 @@ export default class App extends React.Component {
       });
   }
   handleSignOut() {
-    window.localStorage.removeItem('BURToken');
+
     this.setState({
-      currentToken: 0,
-      currentUser: "NaN"
+      currentToken: false,
+      currentUser: false,
+      listData: false
     });
   }
+
+
+  // *Get, /offer
+  fetchOffers() {
+    // alert("fetch");
+
+    const fetchAddr = URLconfig.OFFER_ADDRESS;
+
+    fetch(fetchAddr, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+      // body: JSON.stringify()
+    })
+      .then(result => {
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Fail to get offer list", status: result.status, message: result.message }
+      })
+      .then(res => {
+
+        const oldData = this.state.listData;
+        const newData = {
+          offer: res
+        }
+
+        this.setState({
+          listData: { ...oldData, ...newData }
+        });
+      })
+      .catch((error) => {
+        this.errorHandler(error)
+      });
+
+  }
+  // *Get, /order
+  fetchUserOrders() {
+    const fetchAddr = URLconfig.ORDER_ADDRESS + '/own';
+
+    fetch(fetchAddr, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+      // body: JSON.stringify()
+    })
+      .then(result => {
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Fail to get order list", status: result.status, message: result.message }
+      })
+      .then(res => {
+
+        const oldData = this.state.listData;
+        const newData = {
+          order: res
+        }
+
+        this.setState({
+          listData: { ...oldData, ...newData }
+        })
+      })
+      .catch((error) => {
+        this.errorHandler(error)
+      });
+
+  }
+
   // handle all error in the app.
   errorHandler(error) {
     this.setState({
@@ -112,6 +211,7 @@ export default class App extends React.Component {
 
     // window.history.back();
     navigate('/');
+    window.location.reload();
   }
 
   render() {
@@ -122,14 +222,15 @@ export default class App extends React.Component {
 
         <Router>
 
-          <ListPage default path="/list" token={window.localStorage['BURToken']} />
+          <ListPage default path="/list" listData={this.state.listData} token={this.state.currentToken} uname={this.state.currentUser} />
 
-          <LogSignPage path="/login" onLogin={(logInfo) => { this.handleLogin(logInfo) }} onSignUp={(logInfo) => { this.handleSignUp(logInfo) }} />
+          <NewOffer path="/newOffer" token={this.state.currentToken} uname={this.state.currentUser} />
+
+          <LogSignPage path="/login" onLogin={(logInfo) => { this.handleLogin(logInfo) }} onSignUp={(logInfo) => { this.handleSignUp(logInfo) }} token={this.state.currentToken} />
 
           <DetailPage path="/detail" />
 
           <ErrorPage path="error" error={this.state.onGoingError} onClose={() => this.clearError()} />
-
 
         </Router>
       </div>

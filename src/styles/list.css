@@ -1,0 +1,16 @@
+.list-header td {
+  font-weight: 600;
+}
+
+.list-item td {
+  padding: 1em;
+}
+
+.list-title {
+  display: flex;
+  align-items: center;
+}
+
+.list-title .new-offer {
+  margin-left: 2em;
+}

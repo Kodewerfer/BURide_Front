@@ -1,8 +1,8 @@
 import React from 'react';
 
-export default function ErrorPage(props) {
+export default function ErrorPage({ error, onClose }) {
 
-  if (!props.error) {
+  if (!error) {
     window.history.back();
     return false;
   }
@@ -10,14 +10,14 @@ export default function ErrorPage(props) {
   return (
     <div>
       <h3>Error</h3>
-      <h3>{props.error.title}</h3>
-      <h4>{props.error.message}</h4>
-      <h4>Server status : {props.error.status}</h4>
+      <h3>{error.title}</h3>
+      <h4>{error.message}</h4>
+      <h4>Server status : {error.status}</h4>
       {/* <div>
-        <p>{props.error}</p>
+        <p>{error}</p>
       </div> */}
       <div className="close-error">
-        <button onClick={props.onClose}>Back</button>
+        <button onClick={onClose}>Back</button>
       </div>
     </div>
   )
