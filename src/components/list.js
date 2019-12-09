@@ -1,5 +1,5 @@
 import React from 'react';
-import { navigate, Redirect, Link } from "@reach/router"
+import { Redirect, Link } from "@reach/router"
 
 import '../styles/list.css';
 
@@ -24,11 +24,13 @@ export default function ListPage({ listData, token, uname, onOrder, onDeleteOrde
         </div>
 
         <table className="order-list list-wrapper">
-          <tbody>
+          <thead>
             <OrderHeader />
+          </thead>
+          <tbody>
             {orders ? orders.result.map(entry =>
               <OrderItem key={entry._id} data={entry} uname={uname} onDeleteOrder={onDeleteOrder} />
-            ) : ''}
+            ) : <tr></tr>}
           </tbody>
         </table>
 
@@ -38,11 +40,13 @@ export default function ListPage({ listData, token, uname, onOrder, onDeleteOrde
         </div>
 
         <table className="offer-list list-wrapper">
-          <tbody>
+          <thead>
             <OfferHeader />
+          </thead>
+          <tbody>
             {offers ? offers.result.map(entry =>
               <OfferItem key={entry._id} data={entry} uname={uname} onOrder={onOrder} onDeleteOffer={onDeleteOffer} />
-            ) : ''}
+            ) : <tr></tr>}
           </tbody>
         </table>
 
