@@ -3,94 +3,55 @@ import { navigate, Redirect, Link } from "@reach/router"
 
 import '../styles/list.css';
 
-export default class ListPage extends React.Component {
-  constructor(props) {
-    super(props);
+export default function ListPage({ listData, token, uname, onOrder, onDeleteOrder, onDeleteOffer }) {
+
+  if (!token) {
+    return (<Redirect noThrow to="/login"></Redirect>)
   }
 
-  componentDidMount() {
-    if (!this.props.listData) {
-      // return this.props.
-    }
+  if (!listData) {
+    return '';
   }
 
-  renderOffer = () => {
-    // alert('offer');
-    const data = this.props.listData.offer;
-    let items = [];
+  const { offers, orders } = listData;
 
-    if (!data || !data.count || !data.result) {
-      return "No Data";
-    }
+  return (
+    <div className="list-page">
+      <div className="list-inner">
 
-    items.push(<OfferHeader />);
-    data.result.map(entry => {
-      items.push(<OfferItem key={entry._id} data={entry} uname={this.props.uname} />)
-      // debugger;
-    })
-
-    return (
-      <table className="offer-list list-wrapper">
-        {items}
-      </table>
-    );
-  }
-  renderOrder = () => {
-    // alert('offer');
-    const data = this.props.listData.order;
-    let items = [];
-
-    if (!data || !data.count || !data.result) {
-      return "No Data";
-    }
-
-    items.push(<OrderHeader />);
-    data.result.map(entry => {
-      items.push(<OrderItem key={entry._id} data={entry} />)
-      // debugger;
-    })
-
-    return (
-      <table className="order-list list-wrapper">
-        {items}
-      </table>
-    );
-  }
-
-
-  render() {
-
-    if (!this.props.token) {
-      return (<Redirect noThrow to="/login"></Redirect>)
-    }
-
-
-    return (
-      <div className="list-page">
-        <div className="list-inner">
-
-          <div className="list-title">
-            <h2>Your Orders</h2>
-          </div>
-
-
-
-          {this.renderOrder()}
-          <div className="list-title">
-            <h2>Offers</h2>
-            <Link to="/newOffer"><button className="new-offer">Offer A New Ride</button></Link>
-          </div>
-
-          {this.renderOffer()}
-
-
+        <div className="list-title">
+          <h2>Your Orders</h2>
         </div>
+
+        <table className="order-list list-wrapper">
+          <tbody>
+            <OrderHeader />
+            {orders ? orders.result.map(entry =>
+              <OrderItem key={entry._id} data={entry} uname={uname} onDeleteOrder={onDeleteOrder} />
+            ) : ''}
+          </tbody>
+        </table>
+
+        <div className="list-title">
+          <h2>Offers</h2>
+          <Link to="/newOffer"><button className="new-offer">Offer A New Ride</button></Link>
+        </div>
+
+        <table className="offer-list list-wrapper">
+          <tbody>
+            <OfferHeader />
+            {offers ? offers.result.map(entry =>
+              <OfferItem key={entry._id} data={entry} uname={uname} onOrder={onOrder} onDeleteOffer={onDeleteOffer} />
+            ) : ''}
+          </tbody>
+        </table>
+
       </div>
-    )
-  }
+    </div>
+  )
 }
 
-function OfferHeader(props) {
+function OfferHeader() {
   return (
     <tr className="list-item list-header">
       <td>From</td>
@@ -103,20 +64,55 @@ function OfferHeader(props) {
   )
 }
 
-function OfferItem(props) {
+function OfferItem({ data, uname, onOrder, onDeleteOffer }) {
+
+  if (!data.user) {
+    return 'Offer data corrupted';
+  }
   return (
     <tr className="list-item">
-      <td>{props.data.from}</td>
-      <td>{props.data.to}</td>
-      <td>{props.data.date}</td>
-      <td>{props.data.time}</td>
-      <td align="center">{props.data.seats}</td>
-      <td>{props.data.user.username === props.uname ? 'YOU' : props.data.user.username}</td>
+      <td>{data.from}</td>
+      <td>{data.to}</td>
+      <td>{data.date}</td>
+      <td>{data.time}</td>
+      <td align="center">{data.seats}</td>
+      <td>{data.user.username === uname ? 'YOU' : data.user.username}</td>
+      <td> <OfferItemOperation data={data} uname={uname} onDeleteOffer={onDeleteOffer} onOrder={onOrder} /></td>
     </tr>
   )
 }
 
-function OrderHeader(props) {
+function OfferItemOperation({ data, uname, onDeleteOffer, onOrder }) {
+
+  let [isOrdering, setOrdering] = React.useState(false);
+  let [seatsTaking, setSeats] = React.useState(1);
+
+  let button = null;
+
+  if (data.user.username === uname) {
+    button = (<button onClick={() => onDeleteOffer(data._id)}>Delete</button>);
+  } else {
+
+    if (!isOrdering) {
+      button = (<button onClick={() => setOrdering(true)}>Take this offer</button>);
+    } else {
+      return (
+        <div>
+          <label>
+            Seats:
+            <input type="number" value={seatsTaking} onChange={(ev) => setSeats(ev.target.value)} />
+          </label>
+          <button onClick={() => onOrder(data._id, seatsTaking)}>Take</button>
+        </div>
+      )
+    }
+
+  }
+
+  return button;
+}
+
+function OrderHeader() {
   return (
     <tr className="list-item list-header">
       <td>From</td>
@@ -128,15 +124,18 @@ function OrderHeader(props) {
   )
 }
 
-function OrderItem(props) {
+function OrderItem({ data, onDeleteOrder }) {
+  if (!data.offer) {
+    return 'Order data corrupted';
+  }
   return (
     <tr className="list-item">
-      <td>{props.data.offer.from}</td>
-      <td>{props.data.offer.to}</td>
-      <td>{props.data.offer.date}</td>
-      <td>{props.data.offer.time}</td>
-      <td align="center">{props.data.seats}</td>
-      <td align="center"><button>Delete</button></td>
+      <td>{data.offer.from}</td>
+      <td>{data.offer.to}</td>
+      <td>{data.offer.date}</td>
+      <td>{data.offer.time}</td>
+      <td align="center">{data.seats}</td>
+      <td align="center"><button onClick={() => onDeleteOrder(data._id)}>Delete</button></td>
     </tr>
   )
 }

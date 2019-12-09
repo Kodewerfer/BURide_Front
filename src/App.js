@@ -121,6 +121,128 @@ export default class App extends React.Component {
       listData: false
     });
   }
+  // *Post, offers
+  handleNewOffer(offerInfo) {
+    // const history = useHistory();
+    const fetchAddr = URLconfig.OFFER_ADDRESS;
+
+    fetch(fetchAddr, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+      body: JSON.stringify(offerInfo)
+    })
+      .then((result) => {
+
+        if (result.status === 201) {
+          return result.json();
+        }
+
+        throw { title: "Create offer unsuccessful", message: result.message, status: result.status };
+
+      })
+      .then((res) => {
+        navigate('/');
+        window.location.reload();
+      })
+      // .then()
+      .catch((error) => {
+        this.errorHandler(error);
+      });
+  }
+  // *Post, orders
+  handleOrder(oId, seats) {
+    const fetchAddr = URLconfig.ORDER_ADDRESS;
+
+    fetch(fetchAddr, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+      body: JSON.stringify({
+        offerID: oId,
+        seats: seats
+      })
+    })
+      .then((result) => {
+
+        if (result.status === 201) {
+          return result.json();
+        }
+
+        throw { title: "Create Order unsuccessful", message: 'Not enough seats avaliable', status: result.status };
+
+      })
+      .then((res) => {
+        navigate('/');
+        window.location.reload();
+      })
+      // .then()
+      .catch((error) => {
+        this.errorHandler(error);
+      });
+  }
+  // *Delete, orders/order/:oId
+  handleDeleteOrder(oId) {
+    const fetchAddr = URLconfig.ORDER_ADDRESS + '/order/' + oId;
+
+    fetch(fetchAddr, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      }
+    })
+      .then((result) => {
+
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Delete order failed", status: result.status };
+
+      })
+      .then((res) => {
+        navigate('/');
+        window.location.reload();
+      })
+      // .then()
+      .catch((error) => {
+        this.errorHandler(error);
+      });
+  }
+  // *Delete, orders/order/:oId
+  handleDeleteOffer(oId) {
+    const fetchAddr = URLconfig.OFFER_ADDRESS + '/offer/' + oId;
+
+    fetch(fetchAddr, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      }
+    })
+      .then((result) => {
+
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Delete offer failed", status: result.status };
+
+      })
+      .then((res) => {
+        navigate('/');
+        window.location.reload();
+      })
+      // .then()
+      .catch((error) => {
+        this.errorHandler(error);
+      });
+  }
 
 
   // *Get, /offer
@@ -148,7 +270,7 @@ export default class App extends React.Component {
 
         const oldData = this.state.listData;
         const newData = {
-          offer: res
+          offers: res
         }
 
         this.setState({
@@ -183,12 +305,13 @@ export default class App extends React.Component {
 
         const oldData = this.state.listData;
         const newData = {
-          order: res
+          orders: res
         }
 
         this.setState({
           listData: { ...oldData, ...newData }
-        })
+        });
+
       })
       .catch((error) => {
         this.errorHandler(error)
@@ -222,9 +345,9 @@ export default class App extends React.Component {
 
         <Router>
 
-          <ListPage default path="/list" listData={this.state.listData} token={this.state.currentToken} uname={this.state.currentUser} />
+          <ListPage default path="/list" onOrder={(oId, seats) => this.handleOrder(oId, seats)} onDeleteOrder={(oId) => this.handleDeleteOrder(oId)} onDeleteOffer={(oId) => this.handleDeleteOffer(oId)} listData={this.state.listData} token={this.state.currentToken} uname={this.state.currentUser} />
 
-          <NewOffer path="/newOffer" token={this.state.currentToken} uname={this.state.currentUser} />
+          <NewOffer path="/newOffer" onSubmit={(payload) => { this.handleNewOffer(payload) }} token={this.state.currentToken} />
 
           <LogSignPage path="/login" onLogin={(logInfo) => { this.handleLogin(logInfo) }} onSignUp={(logInfo) => { this.handleSignUp(logInfo) }} token={this.state.currentToken} />
 
