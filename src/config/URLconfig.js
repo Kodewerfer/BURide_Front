@@ -1,5 +1,16 @@
-// const SERVER_ADDRESS = process.env.BUR_SER_ADDR || "http://localhost:3004";
-const SERVER_ADDRESS = "http://165.22.239.143:3004";
+
+let addr = ''
+
+if (window.location.hostname === 'localhost') {
+  addr = 'http://localhost:3004';
+} else {
+  addr = "http://165.22.239.143:3004";
+}
+
+console.log(window.location.hostname);
+console.log('server address:' + addr);
+
+const SERVER_ADDRESS = addr;
 
 const URLconfig = {
 
