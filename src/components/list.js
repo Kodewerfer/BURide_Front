@@ -16,8 +16,8 @@ export default function ListPage({ listData, token, uname, onOrder, onDeleteOrde
   const { offerUser, offersOther, orders } = listData;
 
   return (
-    <div className="list-page">
-      <div className="list-inner">
+    <div className="list-page-wrapper">
+      <div className="list-page">
 
         <div className="list-title">
           <h2>Your Orders</h2>
@@ -101,7 +101,7 @@ function OfferItemOperation({ data, uname, onDeleteOffer, onOrder }) {
       <div className="list-op-own list-op-btns">
         <button onClick={() => onDeleteOffer(data._id)}>Delete</button>
         <span> | </span>
-        <Link to={'/detail' + data._id}><button>View</button></Link>
+        <Link to={'/detail/' + data._id}><button>View</button></Link>
       </div>
     );
   } else {

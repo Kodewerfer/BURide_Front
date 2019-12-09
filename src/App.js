@@ -418,7 +418,7 @@ export default class App extends React.Component {
   render() {
     return (
       <div className="body-wrapper">
-
+        
         <div className="main-title">
           <h1>BU ride carpool</h1>
         </div>
@@ -433,7 +433,7 @@ export default class App extends React.Component {
 
           <LogSignPage path="/login" onLogin={(logInfo) => { this.handleLogin(logInfo) }} onSignUp={(logInfo) => { this.handleSignUp(logInfo) }} token={this.state.currentToken} />
 
-          <DetailPage path="/detail" />
+          <DetailPage path="/detail/:oId" token={this.state.currentToken} />
 
           <ErrorPage path="error" error={this.state.onGoingError} onClose={() => this.clearError()} />
 
