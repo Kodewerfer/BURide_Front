@@ -13,7 +13,7 @@ export default function ListPage({ listData, token, uname, onOrder, onDeleteOrde
     return '';
   }
 
-  const { offers, orders } = listData;
+  const { offerUser, offersOther, orders } = listData;
 
   return (
     <div className="list-page">
@@ -44,7 +44,10 @@ export default function ListPage({ listData, token, uname, onOrder, onDeleteOrde
             <OfferHeader />
           </thead>
           <tbody>
-            {offers ? offers.result.map(entry =>
+            {offerUser ? offerUser.result.map(entry =>
+              <OfferItem key={entry._id} data={entry} uname={uname} onOrder={onOrder} onDeleteOffer={onDeleteOffer} />
+            ) : <tr></tr>}
+            {offersOther ? offersOther.result.map(entry =>
               <OfferItem key={entry._id} data={entry} uname={uname} onOrder={onOrder} onDeleteOffer={onDeleteOffer} />
             ) : <tr></tr>}
           </tbody>
@@ -94,14 +97,20 @@ function OfferItemOperation({ data, uname, onDeleteOffer, onOrder }) {
   let button = null;
 
   if (data.user.username === uname) {
-    button = (<button onClick={() => onDeleteOffer(data._id)}>Delete</button>);
+    button = (
+      <div className="list-op-own list-op-btns">
+        <button onClick={() => onDeleteOffer(data._id)}>Delete</button>
+        <span> | </span>
+        <Link to={'/detail' + data._id}><button>View</button></Link>
+      </div>
+    );
   } else {
 
     if (!isOrdering) {
       button = (<button onClick={() => setOrdering(true)}>Take this offer</button>);
     } else {
       return (
-        <div>
+        <div className="list-op-others list-op-btns">
           <label>
             Seats:
             <input type="number" value={seatsTaking} onChange={(ev) => setSeats(ev.target.value)} />

@@ -22,8 +22,7 @@ export default class App extends React.Component {
   // fetch data of the list only when mounting
   componentDidMount() {
     if (this.state.currentToken && this.state.currentUser) {
-      this.fetchOffers();
-      this.fetchUserOrders();
+      this.refreshList();
     }
   }
   //  handle localStorage, all in one place.
@@ -43,6 +42,11 @@ export default class App extends React.Component {
       window.localStorage.removeItem('BURToken');
       window.localStorage.removeItem('BURUser');
     }
+  }
+  refreshList() {
+    this.fetchUserOffers();
+    this.fetchOthersOffers();
+    this.fetchUserOrders();
   }
 
 
@@ -245,7 +249,117 @@ export default class App extends React.Component {
   }
 
 
+  // *Get, /orders/own
+  fetchUserOrders() {
+    const fetchAddr = URLconfig.ORDER_ADDRESS + '/own';
+
+    fetch(fetchAddr, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+      // body: JSON.stringify()
+    })
+      .then(result => {
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Fail to get order list", status: result.status, message: result.message }
+      })
+      .then(res => {
+
+        const oldData = this.state.listData;
+        const newData = {
+          orders: res
+        }
+
+        this.setState({
+          listData: { ...oldData, ...newData }
+        });
+
+      })
+      .catch((error) => {
+        this.errorHandler(error)
+      });
+
+  }
+  // *Get, /orders/others
+  fetchOthersOffers() {
+    // alert("fetch");
+
+    const fetchAddr = URLconfig.OFFER_ADDRESS + "/others";
+
+    fetch(fetchAddr, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+      // body: JSON.stringify()
+    })
+      .then(result => {
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Fail to get offer list", status: result.status, message: result.message }
+      })
+      .then(res => {
+
+        const oldData = this.state.listData;
+        const newData = {
+          offersOther: res
+        }
+
+        this.setState({
+          listData: { ...oldData, ...newData }
+        });
+      })
+      .catch((error) => {
+        this.errorHandler(error)
+      });
+
+  }
+  // *Get, /orders/others
+  fetchUserOffers() {
+    // alert("fetch");
+
+    const fetchAddr = URLconfig.OFFER_ADDRESS + "/own";
+
+    fetch(fetchAddr, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+    })
+      .then(result => {
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Fail to get offer list", status: result.status, message: result.message }
+      })
+      .then(res => {
+
+        const oldData = this.state.listData;
+        const newData = {
+          offerUser: res
+        }
+
+        this.setState({
+          listData: { ...oldData, ...newData }
+        });
+      })
+      .catch((error) => {
+        this.errorHandler(error)
+      });
+
+  }
   // *Get, /offer
+  // -- Deprecated --
   fetchOffers() {
     // alert("fetch");
 
@@ -276,42 +390,6 @@ export default class App extends React.Component {
         this.setState({
           listData: { ...oldData, ...newData }
         });
-      })
-      .catch((error) => {
-        this.errorHandler(error)
-      });
-
-  }
-  // *Get, /order
-  fetchUserOrders() {
-    const fetchAddr = URLconfig.ORDER_ADDRESS + '/own';
-
-    fetch(fetchAddr, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': this.state.currentToken
-      },
-      // body: JSON.stringify()
-    })
-      .then(result => {
-        if (result.status === 200) {
-          return result.json();
-        }
-
-        throw { title: "Fail to get order list", status: result.status, message: result.message }
-      })
-      .then(res => {
-
-        const oldData = this.state.listData;
-        const newData = {
-          orders: res
-        }
-
-        this.setState({
-          listData: { ...oldData, ...newData }
-        });
-
       })
       .catch((error) => {
         this.errorHandler(error)
