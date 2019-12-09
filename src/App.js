@@ -419,6 +419,10 @@ export default class App extends React.Component {
     return (
       <div className="body-wrapper">
 
+        <div className="main-title">
+          <h1>BU ride carpool</h1>
+        </div>
+
         <PageHeader token={this.state.currentToken} username={this.state.currentUser} onSignOut={() => this.handleSignOut()} />
 
         <Router>
