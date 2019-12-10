@@ -39,6 +39,10 @@ export default function ListPage({ listData, token, uname, onOrder, onDeleteOrde
           <Link to="/newOffer"><button className="new-offer">Offer A New Ride</button></Link>
         </div>
 
+        <div>
+          <p><i>(Your own offers will alway appear in the topmost positons)</i></p>
+        </div>
+
         <table className="offer-list list-wrapper">
           <thead>
             <OfferHeader />
@@ -66,6 +70,7 @@ function OfferHeader() {
       <td>Date</td>
       <td>Time</td>
       <td>Seats</td>
+      <td>Price per seat</td>
       <td>Post by</td>
     </tr>
   )
@@ -83,6 +88,7 @@ function OfferItem({ data, uname, onOrder, onDeleteOffer }) {
       <td>{data.date}</td>
       <td>{data.time}</td>
       <td align="center">{data.seats}</td>
+      <td align="center">{data.price}</td>
       <td>{data.user.username === uname ? 'YOU' : data.user.username}</td>
       <td> <OfferItemOperation data={data} uname={uname} onDeleteOffer={onDeleteOffer} onOrder={onOrder} /></td>
     </tr>
@@ -112,8 +118,8 @@ function OfferItemOperation({ data, uname, onDeleteOffer, onOrder }) {
       return (
         <div className="list-op-others list-op-btns">
           <label>
-            Seats:
-            <input type="number" value={seatsTaking} onChange={(ev) => setSeats(ev.target.value)} />
+            <span>Taking {seatsTaking} Seat(s): </span>
+            <input type="range" min="1" max={data.seats} value={seatsTaking} onChange={(ev) => setSeats(ev.target.value)} />
           </label>
           <button onClick={() => onOrder(data._id, seatsTaking)}>Take</button>
         </div>
