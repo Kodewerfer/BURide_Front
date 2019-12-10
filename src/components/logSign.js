@@ -39,6 +39,7 @@ export default function LogSignPage({ token, onSignUp, onLogin }) {
           <div className="logsign-items">
             <label htmlFor="logUPass">Password : </label>
             <input id="logUPass" type="password" value={upass} required onChange={(event) => setUpass(event.target.value)} />
+            {isLogIn ? "" : <p><i>(Password will be hash coded)</i></p>}
           </div>
           <div className="logsign-button">
             <input type="submit" value="Submit" />
