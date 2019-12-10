@@ -10,8 +10,8 @@ import NewOffer from './components/newOffer';
 
 import URLconfig from './config/URLconfig';
 
-
-
+// TODO : load data flickers
+// TODO: A big mess, rewrite this to use func component & hook.
 export default class App extends React.Component {
   state = {
     onGoingError: 0,
@@ -19,7 +19,7 @@ export default class App extends React.Component {
     currentUser: window.localStorage.getItem('BURUser') || false,
     listData: false
   }
-  // fetch data of the list only when mounting
+  // fetch data
   componentDidMount() {
     if (this.state.currentToken && this.state.currentUser) {
       this.refreshList();
@@ -44,9 +44,9 @@ export default class App extends React.Component {
     }
   }
   refreshList() {
-    this.fetchUserOffers();
-    this.fetchOthersOffers();
-    this.fetchUserOrders();
+    this.fetchOffersByCurrentUser();
+    this.fetchOffersByOthers();
+    this.fetchOrdersByCurrentUser();
   }
 
 
@@ -157,7 +157,7 @@ export default class App extends React.Component {
       });
   }
   // *Post, orders
-  handleOrder(oId, seats) {
+  handleNewOrder(oId, seats) {
     const fetchAddr = URLconfig.ORDER_ADDRESS;
 
     fetch(fetchAddr, {
@@ -250,7 +250,7 @@ export default class App extends React.Component {
 
 
   // *Get, /orders/own
-  fetchUserOrders() {
+  fetchOrdersByCurrentUser() {
     const fetchAddr = URLconfig.ORDER_ADDRESS + '/own';
 
     fetch(fetchAddr, {
@@ -285,8 +285,39 @@ export default class App extends React.Component {
       });
 
   }
+  // *Get, /offer/:oId
+  fetchOrdersByOffer(oId) {
+    const fetchAddr = URLconfig.ORDER_ADDRESS + '/offer/' + oId;
+
+    fetch(fetchAddr, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': this.state.currentToken
+      },
+      // body: JSON.stringify()
+    })
+      .then(result => {
+        if (result.status === 200) {
+          return result.json();
+        }
+
+        throw { title: "Fail to get offer's order", status: result.status, message: result.message }
+      })
+      .then(res => {
+
+        this.setState({
+          lastOfferOrder: res
+        });
+
+      })
+      .catch((error) => {
+        this.errorHandler(error)
+      });
+
+  }
   // *Get, /orders/others
-  fetchOthersOffers() {
+  fetchOffersByOthers() {
     // alert("fetch");
 
     const fetchAddr = URLconfig.OFFER_ADDRESS + "/others";
@@ -323,7 +354,7 @@ export default class App extends React.Component {
 
   }
   // *Get, /orders/others
-  fetchUserOffers() {
+  fetchOffersByCurrentUser() {
     // alert("fetch");
 
     const fetchAddr = URLconfig.OFFER_ADDRESS + "/own";
@@ -358,8 +389,9 @@ export default class App extends React.Component {
       });
 
   }
-  // *Get, /offer
+
   // -- Deprecated --
+  // *Get, /offer
   fetchOffers() {
     // alert("fetch");
 
@@ -418,7 +450,7 @@ export default class App extends React.Component {
   render() {
     return (
       <div className="body-wrapper">
-        
+
         <div className="main-title">
           <h1>BU ride carpool</h1>
         </div>
@@ -427,13 +459,13 @@ export default class App extends React.Component {
 
         <Router>
 
-          <ListPage default path="/list" onOrder={(oId, seats) => this.handleOrder(oId, seats)} onDeleteOrder={(oId) => this.handleDeleteOrder(oId)} onDeleteOffer={(oId) => this.handleDeleteOffer(oId)} listData={this.state.listData} token={this.state.currentToken} uname={this.state.currentUser} />
+          <ListPage default path="/list" onOrder={(oId, seats) => this.handleNewOrder(oId, seats)} onDeleteOrder={(oId) => this.handleDeleteOrder(oId)} onDeleteOffer={(oId) => this.handleDeleteOffer(oId)} listData={this.state.listData} token={this.state.currentToken} uname={this.state.currentUser} />
 
           <NewOffer path="/newOffer" onSubmit={(payload) => { this.handleNewOffer(payload) }} token={this.state.currentToken} />
 
           <LogSignPage path="/login" onLogin={(logInfo) => { this.handleLogin(logInfo) }} onSignUp={(logInfo) => { this.handleSignUp(logInfo) }} token={this.state.currentToken} />
 
-          <DetailPage path="/detail/:oId" token={this.state.currentToken} />
+          <DetailPage path="/detail/:oId" offerUser={this.state.listData.offerUser} token={this.state.currentToken} fetchOrders={(oId) => this.fetchOrdersByOffer(oId)} offerOrder={this.state.lastOfferOrder} />
 
           <ErrorPage path="error" error={this.state.onGoingError} onClose={() => this.clearError()} />
 
