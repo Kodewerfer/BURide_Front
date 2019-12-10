@@ -1,9 +1,10 @@
 import React from 'react';
+import { navigate } from "@reach/router"
 
 export default function ErrorPage({ error, onClose }) {
 
   if (!error) {
-    window.history.back();
+    navigate('/');
     return false;
   }
 
