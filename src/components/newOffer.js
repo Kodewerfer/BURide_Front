@@ -9,6 +9,7 @@ export default function NewOffer({ onSubmit, token }) {
   let [Date, setDate] = React.useState(' ');
   let [Time, setTime] = React.useState(' ');
   let [Seats, setSeats] = React.useState(1);
+  let [price, setPrice] = React.useState(15);
 
   if (!token) {
     return (<Redirect noThrow to="/login"></Redirect>)
@@ -51,6 +52,11 @@ export default function NewOffer({ onSubmit, token }) {
         <div className="newoffer-items">
           <label htmlFor="rideSeats">Seats : </label>
           <input id="rideSeats" type="number" required value={Seats} onChange={ev => setSeats(ev.target.value)} />
+        </div>
+
+        <div className="newoffer-items">
+          <label htmlFor="ridePrice">Price per seat : </label>
+          <input id="ridePrice" type="number" required value={price} onChange={ev => setPrice(ev.target.value)} />
         </div>
 
         <div className="form-operations">
