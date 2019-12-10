@@ -1,10 +1,10 @@
 # BURide Front end
 
-[Demo Address]( http://165.22.239.143:3005/)
+[Demo]( http://165.22.239.143:3005/)
 
-For Cs557
+For CS557
 Provides front end for proejct BURide
 
-*Created with create-react-app*
+*Created with create-react-app,*
+*all build-in scripts apply*
 
-All build-in scripts applies
