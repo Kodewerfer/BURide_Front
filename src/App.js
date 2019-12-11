@@ -14,6 +14,7 @@ import URLconfig from './config/URLconfig';
 // TODO: A big mess, rewrite this to use func component & hook.
 export default class App extends React.Component {
   state = {
+    lastErrorCode: 0,
     onGoingError: 0,
     currentToken: window.localStorage.getItem('BURToken') || false,
     currentUser: window.localStorage.getItem('BURUser') || false,
@@ -432,13 +433,19 @@ export default class App extends React.Component {
   // handle all error in the app.
   errorHandler(error) {
     this.setState({
+      lastErrorCode: error.status,
       onGoingError: error
     })
     // console.log(error);
     navigate('/error');
   }
   clearError() {
+    if (this.state.lastErrorCode === 401 || this.state.lastErrorCode === "401") {
+      this.handleSignOut();
+    }
+
     this.setState({
+      lastErrorCode: 0,
       onGoingError: 0
     });
 

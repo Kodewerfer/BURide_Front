@@ -3,9 +3,17 @@ import { navigate } from "@reach/router"
 
 export default function ErrorPage({ error, onClose }) {
 
+  let [loginError, setloginError] = React.useState(false);
+
   if (!error) {
     navigate('/');
     return false;
+  }
+
+
+  if (!loginError && (error.status === 401 || error.status === "401")) {
+    setloginError(true);
+    error.message = "User credential failed/expired"
   }
 
   return (
@@ -18,7 +26,7 @@ export default function ErrorPage({ error, onClose }) {
         <p>{error}</p>
       </div> */}
       <div className="close-error">
-        <button onClick={onClose}>Back</button>
+        <button onClick={onClose}>{loginError ? 'Login' : 'Back'}</button>
       </div>
     </div>
   )
