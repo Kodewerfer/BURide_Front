@@ -1,7 +1,5 @@
 # BURide Front end
 
-[Demo]( http://165.22.239.143:3005/)
-
 For CS557
 Provides front end for proejct BURide
 
